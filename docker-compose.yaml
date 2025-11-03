@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  graphdb:
+    image: ontotext/graphdb:10.8.9
+    container_name: graphdb
+    ports:
+      - 7200:7200
+    environment:
+      - GDB_HEAP_SIZE=2G
+      - GDB_MIN_MEMORY=1G
+      - GDB_MAX_MEMORY=4G
+    volumes:
+      - graphdb-data:/opt/graphdb/home/data
+    restart: unless-stopped
+
+volumes:
+  graphdb-data:

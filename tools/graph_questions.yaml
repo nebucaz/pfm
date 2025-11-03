@@ -1,0 +1,71 @@
+---
+- question: Show my profile
+  sparql: |
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX pfm: <https://static.rwpz.net/spendcast/schema#>
+    select ?name ?birthDate ?phoneNumber
+    WHERE {
+      ?person a pfm:Person ;
+      rdfs:label ?name .
+      OPTIONAL { ?person pfm:birthDate ?birthDate } .
+      OPTIONAL { ?person pfm:hasTelephoneNumber ?phoneNumber } .
+    }
+- question: Show all my accounts with name, purpose, account number, currency and initial balance
+  sparql: |
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX pfm: <https://static.rwpz.net/spendcast/schema#>
+    SELECT ?label ?accountPurpose ?initialBalance ?accNum ?accountCurrency
+    WHERE {
+    ?account a pfm:Account ;
+        pfm:hasAccountPurpose ?accountPurpose ;
+        rdfs:label ?label .
+        OPTIONAL{ ?account pfm:hasInitialBalance ?initialBalance} .
+        OPTIONAL{ ?account pfm:accountNumber ?accNum} .
+    	  OPTIONAL{ ?account pfm:hasCurrency ?accountCurrency}
+    	  OPTIONAL{ ?account pfm:hasCurrency ?accountCurrency}
+    }
+- question: Show me the current balance of the account <account_number> between <start_date> and <end_date>
+  sparql: |
+    PREFIX exs: <https://static.rwpz.net/spendcast/schema#>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX pfm: <https://static.rwpz.net/spendcast/schema#>
+    SELECT (SUM(IF(?transactionType = 'income', ?amount, -?amount)) as ?balance) where {
+      ?account exs:accountNumber "<account_nummber>" .
+      ?participantRole pfm:isPlayedBy ?account .
+      ?transaction pfm:hasParticipant ?participantRole .
+
+      ?transaction a pfm:FinancialTransaction ;
+      pfm:hasMonetaryAmount ?monetaryAmount ;
+      pfm:hasTransactionDate ?transactionDate ;
+      pfm:transactionType ?transactionType ;
+      pfm:status ?transactionStatus .
+        
+      ?monetaryAmount pfm:hasCurrency ?currency ;
+      pfm:hasAmount ?amount .
+        
+      FILTER(strstarts(?transactionStatus, "settled"))
+      FILTER (?transactionDate >= "<start_date>"^^xsd:date)
+      FILTER (?transactionDate < "<end_date>"^^xsd:date)
+    }
+
+- question: Show me all my payment cards
+  sparql: |
+
+- question: Show me the transactions of the payment card <card> from <start_date> to <end_date>
+  sparql: |
+
+- question: Show me all transactions of the person with the name <full_name>
+  sparq: |
+    PREFIX pfm: <https://static.rwpz.net/spendcast/schema#>
+    SELECT ?transaction ?amount ?currency ?date WHERE {
+      ?person pfm:hasName "<full_name>" .
+      ?person pfm:hasAccount ?account .
+      ?transaction pfm:hasParticipant ?participant_role .
+      ?participant_role pfm:isPlayedBy ?account .
+      ?transaction pfm:hasMonetaryAmount ?monetary_amount .
+      ?transaction pfm:hasTransactionDate ?date .
+      ?monetary_amount pfm:hasAmount ?amount .
+      ?monetray_amount pfm:hasCurrency ?currency .
+    } LIMIT 10
+
